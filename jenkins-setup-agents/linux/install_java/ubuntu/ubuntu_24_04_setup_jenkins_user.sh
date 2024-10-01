@@ -1,26 +1,24 @@
 #!/bin/bash
 
 #--------------------------------------------------------------------
-# Script to Create and Setup Jenkins User on Linux (Ubuntu/Fedora), Add SSH Key, and Optionally Configure sudo
+# Script to Create and Setup Jenkins User on Ubuntu, Add SSH Key, and Optionally Configure sudo
 #
 # Purpose:
 #   This script: 
 #   1. Creates a Jenkins user
 #   2. Sets a Jenkins user password 
-#   3. Adds the Jenkins user to the sudo/ wheel  group, 
+#   3. Adds the Jenkins user to the sudo group
 #   4. Checks and creates the Jenkins home directory,
 #   5. Sets permissions for the Jenkins user's home directory, 
 #   6. Add an SSH key to the `authorized_keys` file, 
 #   7. Configures sudo access without a password.
 #
-#
 # Tested on: 
-#           Ubuntu 24.04,
-#           Fedora 40
+#           Ubuntu 24.04
 # Developed by Andrey Dubovsky
 #--------------------------------------------------------------------
 
-LOG_FILE="/var/log/jenkins_user_setup.log"
+LOG_FILE="/var/log/jenkins_user_setup_ubuntu.log"
 
 # Function for logging info
 function log_info() {
@@ -52,9 +50,14 @@ function check_command_success() {
 
 # Function to create and setup Jenkins user
 function setup_jenkins_user() {
-    # Create jenkins user with home directory and bash shell
-    sudo useradd -m -s /bin/bash jenkins
-    check_command_success "Failed to create jenkins user" "Jenkins user created successfully"
+    # Check if user already exists
+    if id "jenkins" &>/dev/null; then
+        log_info "User 'jenkins' already exists. Skipping user creation."
+    else
+        # Create jenkins user with home directory and bash shell
+        sudo useradd -m -s /bin/bash jenkins
+        check_command_success "Failed to create jenkins user" "Jenkins user created successfully"
+    fi
 
     # Set password for jenkins user
     echo "Please enter password for jenkins user:"
@@ -83,6 +86,6 @@ function setup_jenkins_user() {
 }
 
 # Run the setup function
-log_info "Starting Jenkins user setup process"
+log_info "Starting Jenkins user setup process on Ubuntu"
 setup_jenkins_user
-log_success "Jenkins user setup completed successfully"
+log_success "Jenkins user setup on Ubuntu completed successfully"
