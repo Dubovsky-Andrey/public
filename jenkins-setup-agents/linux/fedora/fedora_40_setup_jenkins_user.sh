@@ -48,7 +48,7 @@ function check_command_success() {
 function check_ssh_dir() {
     if [ ! -d "/home/jenkins/.ssh" ]; then
         log_info "SSH directory not found. Creating it..."
-        mkdir /home/jenkins/.ssh
+        mkdir -p /home/jenkins/.ssh
         check_command_success "Failed to create .ssh directory" "SSH directory created with correct permissions."
     else
         log_info "SSH directory exists. Checking permissions..."
