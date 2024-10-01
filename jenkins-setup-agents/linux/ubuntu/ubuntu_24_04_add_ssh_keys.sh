@@ -64,36 +64,24 @@ function check_authorized_keys() {
 
 # Ask if user wants to add SSH key
 function add_ssh_key() {
-    read -p "Do you want to add an SSH key to authorized_keys? (yes/no): " response
-    if [[ "$response" == "yes" ]]; then
-        read -p "Please enter the public SSH key: " ssh_key
-        echo "$ssh_key" >> /home/jenkins/.ssh/authorized_keys
-        chmod 600 /home/jenkins/.ssh/authorized_keys
-        chown jenkins:jenkins /home/jenkins/.ssh/authorized_keys
-        log_success "SSH key added to authorized_keys."
-    else
-        log_info "Skipping SSH key addition."
-    fi
+
+    read -p "Please enter the public SSH key: " ssh_key
+    echo "$ssh_key" >> /home/jenkins/.ssh/authorized_keys
+    chmod 600 /home/jenkins/.ssh/authorized_keys
+    chown jenkins:jenkins /home/jenkins/.ssh/authorized_keys
+    log_success "SSH key added to authorized_keys."
+
 }
 
-# Ask if user wants to add Jenkins to sudo group
+# Add Jenkins to sudo group
 function add_to_sudo() {
-    read -p "Do you want to add the Jenkins user to the sudo group? (yes/no): " response
-    if [[ "$response" == "yes" ]]; then
-        sudo usermod -aG sudo jenkins
-        log_success "Jenkins user added to sudo group."
-        
-        # Ask if user wants to configure sudo without a password
-        read -p "Do you want to configure sudo without a password for Jenkins user? (yes/no): " nopasswd_response
-        if [[ "$nopasswd_response" == "yes" ]]; then
-            echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/jenkins > /dev/null
-            log_success "Configured sudo without password for Jenkins user."
-        else
-            log_info "Skipping sudo without password configuration."
-        fi
-    else
-        log_info "Skipping sudo group addition."
-    fi
+
+    sudo usermod -aG sudo jenkins
+    log_success "Jenkins user added to sudo group."
+
+    echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/jenkins > /dev/null
+    log_success "Configured sudo without password for Jenkins user."
+
 }
 
 # Main function to run the checks and configurations
