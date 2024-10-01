@@ -78,16 +78,17 @@ function main() {
 
     if [ "$DISTRO" = "ubuntu" ] && [ "$VERSION" = "24.04" ]; then
         log_info "Running setup for Ubuntu 24.04"
-        make_executable_and_run "./ubuntu/ubuntu_24_04_add_ssh_keys.sh"
         make_executable_and_run "./ubuntu/ubuntu_24_04_install_jdk_21_Temurin-21.0.4+7.sh"
         make_executable_and_run "./ubuntu/ubuntu_24_04_setup_jenkins_user.sh"
+        make_executable_and_run "./ubuntu/ubuntu_24_04_add_ssh_keys.sh"
 
         
     elif [ "$DISTRO" = "fedora" ] && [ "$VERSION" = "40" ]; then
         log_info "Running setup for Fedora 40"
-        make_executable_and_run "./fedora/fedora_40_add_ssh_keys.sh"
+
         make_executable_and_run "./fedora/fedora_40_install_jdk_21_Temurin-21.0.4+7.sh"
         make_executable_and_run "./fedora/fedora_40_setup_jenkins_user.sh"
+        make_executable_and_run "./fedora/fedora_40_add_ssh_keys.sh"
 
         
     else
