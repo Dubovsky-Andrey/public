@@ -16,6 +16,7 @@
 #--------------------------------------------------------------------
 
 LOG_FILE="/var/log/os_arch_detection.log"
+MYUSER=""
 
 # Function to log info messages
 function log_info() {
@@ -37,7 +38,7 @@ function make_executable_and_run() {
     if [ -f "$script_name" ]; then
         chmod +x "$script_name"
         log_info "Running $script_name"
-        ./"$script_name"
+        ./"$script_name" --user "$MYUSER"
         if [ $? -ne 0 ]; then
             log_error "Failed to execute $script_name"
         else
@@ -71,8 +72,36 @@ function detect_architecture() {
     fi
 }
 
+# Function to parse parameters
+function parse_params() {
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --user) MYUSER="$2"; shift ;; # Устанавливаем MYUSER если передан --user
+            --help)
+                echo "Usage: $0 --user <username>"
+                exit 0
+                ;;
+            *)
+                echo "Unknown parameter passed: $1"
+                echo "Use --help for usage information."
+                exit 1
+                ;;
+        esac
+        shift
+    done
+
+    # Если MYUSER не задан, выводим ошибку
+    if [ -z "$MYUSER" ]; then
+        echo "Error: --user parameter is required"
+        echo "Usage: $0 --user <username>"
+        exit 1
+    fi
+}
+
 # Main function
 function main() {
+    parse_params "$@" 
+
     detect_architecture
     detect_os
 
@@ -84,13 +113,12 @@ function main() {
     # Fedora 40 logic  
     elif [ "$DISTRO" = "fedora" ] && [ "$VERSION" = "40" ]; then
         log_info "Running setup for Fedora 40"
-
         make_executable_and_run "./fedora/fedora_40_install_docker.sh"
- 
+
     else
         log_error "Unsupported OS or version: $DISTRO $VERSION"
     fi
 }
 
 # Start the main process
-main
+main "$@"
