@@ -1,46 +1,33 @@
 #!/bin/bash
 
 #--------------------------------------------------------------------
-# Script to Install Docker and Docker Compose on Ubuntu
+# Script to Install Docker and Docker Compose on Fedora
 # Tested on: 
-#           Ubuntu 24.04
+#           Fedora 40
 # Developed by Andrey Dubovsky
 #--------------------------------------------------------------------
-# How to Use:
-#   1. Make the script executable:
-#      chmod +x ubuntu_24_04_install_docker.sh
-#
-#   2. Run the script with the required --user parameter:
-#      ./ubuntu_24_04_install_docker.sh --user <username>
-#      Example:
-#      ./ubuntu_24_04_install_docker.sh --user jenkins
-#
-#   3. Use --help for more information:
-#      ./ubuntu_24_04_install_docker.sh --help
-#
-#   The --user parameter specifies which user will be added to the docker group.
-#   If the parameter is missing, the script will terminate with an error.
-#--------------------------------------------------------------------
-
-LOG_FILE="/var/log/docker_install.log"
+LOG_FILE="/var/log/docker_install_fedora.log"
 
 # Function for logging info
 function log_info() {
     echo "[INFO] $1"
+    echo "[INFO] $1" >> "$LOG_FILE"
 }
 
 # Function for logging success
 function log_success() {
     echo "[SUCCESS] $1"
+    echo "[SUCCESS] $1" >> "$LOG_FILE"
 }
 
 # Function for logging errors
 function log_error() {
-    echo "[ERROR] $1"
+    echo "[ERROR] $1" >&2
+    echo "[ERROR] $1" >> "$LOG_FILE"
     exit 1
 }
 
-# Function to check if the previous command succeeded
+# Function for checking command success
 function check_command_success() {
     if [ $? -ne 0 ]; then
         log_error "$1"
@@ -52,56 +39,37 @@ function check_command_success() {
 # Remove old Docker versions and related programs
 function remove_old_docker() {
     log_info "Removing old Docker versions and related programs..."
-    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
-        sudo apt-get remove -y $pkg
-        check_command_success "Failed to remove $pkg" "$pkg removed successfully"
-    done
+    sudo dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-selinux docker-engine-selinux docker-engine
+    check_command_success "Failed to remove old Docker versions" "Old Docker versions removed successfully"
 }
 
-# Add Docker's official GPG key
-function add_docker_keys() {
-    log_info "Adding Docker's official GPG key..."
-    sudo apt-get update
-    check_command_success "Failed to update package lists" "Package lists updated successfully"
-    
-    sudo apt-get install -y ca-certificates curl
-    check_command_success "Failed to install ca-certificates and curl" "ca-certificates and curl installed successfully"
-    
-    sudo install -m 0755 -d /etc/apt/keyrings
-    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    check_command_success "Failed to download Docker GPG key" "Docker GPG key downloaded successfully"
-    
-    sudo chmod a+r /etc/apt/keyrings/docker.asc
-    check_command_success "Failed to set permissions on Docker GPG key" "Permissions set successfully on Docker GPG key"
-}
-
-# Add Docker repository to Apt sources
+# Add Docker's official repository to DNF
 function add_docker_repository() {
-    log_info "Adding Docker repository to Apt sources..."
+    log_info "Adding Docker's official repository to DNF..."
+    sudo dnf -y install dnf-plugins-core
+    check_command_success "Failed to install dnf-plugins-core" "dnf-plugins-core installed successfully"
     
-    VERSION_CODENAME=$(lsb_release -cs)
-    check_command_success "Failed to get Ubuntu codename" "Ubuntu codename is $VERSION_CODENAME"
-    
-    echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-    ${VERSION_CODENAME} stable" | \
-    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
     check_command_success "Failed to add Docker repository" "Docker repository added successfully"
 }
 
 # Install Docker and Docker Compose
 function install_docker() {
     log_info "Installing Docker and Docker Compose..."
-    sudo apt-get update
-    check_command_success "Failed to update package lists" "Package lists updated successfully"
-    
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     check_command_success "Failed to install Docker and Docker Compose" "Docker and Docker Compose installed successfully"
+}
+
+# Start Docker service
+function start_docker() {
+    log_info "Starting Docker service..."
+    sudo systemctl start docker
+    check_command_success "Failed to start Docker service" "Docker service started successfully"
 }
 
 # Verify Docker and Docker Compose installation
 function verify_docker_installation() {
-    log_info "Verifying Docker installation..."
+    log_info "Verifying Docker installation."
     
     sudo docker run hello-world
     check_command_success "Failed to run hello-world Docker container" "Docker hello-world container ran successfully"
@@ -149,16 +117,16 @@ function parse_params() {
 
 # Main function
 function main() {
-    log_info "Starting Docker installation process..."
+    log_info "Starting Docker installation process on Fedora..."
 
     remove_old_docker
-    add_docker_keys
     add_docker_repository
     install_docker
+    start_docker
     verify_docker_installation
     add_user_to_docker_group
 
-    log_info "Docker installation completed successfully"
+    log_info "Docker installation completed successfully on Fedora."
 }
 
 # Parse command-line arguments
