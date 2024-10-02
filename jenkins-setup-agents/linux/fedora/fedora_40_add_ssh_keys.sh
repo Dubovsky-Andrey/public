@@ -79,6 +79,12 @@ function add_to_sudo() {
     log_success "Configured sudo without password for Jenkins user."
 }
 
+# Add host verification strategy to github
+function add_known_host_github() {
+    sudo ssh-keyscan -t rsa github.com >> /home/jenkins/.ssh/known_hosts
+    check_command_success "Failed to add verification github strategy" "Added keys to /home/jenkins/.ssh/known_hosts"
+}
+
 # Main function to run the checks and configurations
 function main() {
     log_info "Starting SSH and sudo configuration for Jenkins user on Fedora."
@@ -87,7 +93,8 @@ function main() {
     check_authorized_keys
     add_ssh_key
     add_to_sudo
-
+    add_known_host_github
+    
     log_success "SSH and sudo configuration completed."
 }
 
