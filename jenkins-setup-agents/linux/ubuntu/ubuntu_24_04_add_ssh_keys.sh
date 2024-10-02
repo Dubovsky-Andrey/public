@@ -112,8 +112,5 @@ function main() {
     log_success "SSH and sudo configuration completed."
 }
 
-
-
-
 # Run the main function
 main
