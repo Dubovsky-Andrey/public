@@ -44,7 +44,7 @@ function download_node_exporter() {
     log_info "Downloading Node Exporter version $NODE_EXPORTER_VERSION..."
     cd /tmp || log_error "Failed to change directory to /tmp"
     
-    wget https://github.com/prometheus/node_exporter/releases/download/v$NODE_EXPORTER_VERSION/node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
+    curl -L -o node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v$NODE_EXPORTER_VERSION/node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
     check_command_success "Failed to download Node Exporter" "Node Exporter downloaded successfully"
     
     tar xvfz node_exporter-$NODE_EXPORTER_VERSION.linux-amd64.tar.gz
